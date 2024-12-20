@@ -1,3 +1,4 @@
 data/__pycache__/
 *.pyc
 data/
+submodules/dust3r/checkpoints/
