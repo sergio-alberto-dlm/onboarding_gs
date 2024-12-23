@@ -2,3 +2,5 @@ data/__pycache__/
 *.pyc
 data/
 submodules/dust3r/checkpoints/
+models/__pycache__/
+models/curope/__pycache__/
