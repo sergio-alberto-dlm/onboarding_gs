@@ -46,11 +46,12 @@ def get_args_parser():
     parser.add_argument("--dataset_name", type=str, required=True)
     parser.add_argument("--object_id", type=int, required=True)
     parser.add_argument("--n_views", type=int, default=5)
+    parser.add_argument("--face", type=str, required=True, help="face down or up")
     return parser
 
 # Main function to select keyframes
-def select_keyframes(args, face):
-    scene_path = os.path.join(args.data_base_path, f"obj_{args.object_id:06d}_{face}")
+def select_keyframes(args):
+    scene_path = os.path.join(args.data_base_path, f"obj_{args.object_id:06d}_{args.face}")
     imgs_path = sorted(os.listdir(os.path.join(scene_path, "rgb")))
     masks_path = sorted(os.listdir(os.path.join(scene_path, "mask_visib")))
     resize_dim = (200, 200)
@@ -90,8 +91,8 @@ def select_keyframes(args, face):
         key_frame_indices.append(cluster_indices[np.argmin(distances)])
 
     # Save selected frames and masks
-    dest_img_path = os.path.join("./data", args.dataset_name, f"obj_{args.object_id:06d}", face, f"{args.n_views}_views", "images")
-    dest_mask_path = os.path.join("./data", args.dataset_name, f"obj_{args.object_id:06d}", face, f"{args.n_views}_views", "masks")
+    dest_img_path = os.path.join("./data", args.dataset_name, f"obj_{args.object_id:06d}", args.face, f"{args.n_views}_views", "images")
+    dest_mask_path = os.path.join("./data", args.dataset_name, f"obj_{args.object_id:06d}", args.face, f"{args.n_views}_views", "masks")
     makedirs(dest_img_path, exist_ok=True)
     makedirs(dest_mask_path, exist_ok=True)
 
@@ -99,10 +100,8 @@ def select_keyframes(args, face):
         shutil.copy(os.path.join(scene_path, "rgb", imgs_path[idx]), os.path.join(dest_img_path, f"frame_{i:02d}.jpg"))
         shutil.copy(os.path.join(scene_path, "mask_visib", masks_path[idx]), os.path.join(dest_mask_path, f"mask_{i:02d}.png"))
 
-    print(f"Keyframe selection for {face} completed.")
+    print(f"Keyframe selection for {args.face} completed.")
 
 if __name__ == "__main__":
     args = get_args_parser().parse_args()
-    faces = ["down", "up"]
-    for face in faces:
-        select_keyframes(args, face)
+    select_keyframes(args)
