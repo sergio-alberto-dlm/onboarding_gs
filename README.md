@@ -1,7 +1,16 @@
-# **Easy and Fast onboarding (BOP CHALLENGE)**
+# **Easy and Fast Onboarding (BOP CHALLENGE)**
 
 ## Description
-In this project we provide an easy and fast onboarding of 3D Gaussian Splatting Models for the BOP CHALLENGE dataset, HOPE. 
+In this project, we provide an easy and fast onboarding of 3D Gaussian Splatting Models for the BOP CHALLENGE dataset, HOPE. 
+
+---
+
+## Key Features
+- **Feature Extraction**: Advanced algorithms for key-frame selection, ensuring optimal input data.
+- **Coarse Estimation**: Utilizes state-of-the-art deep learning models for robust initial 3D structure prediction.
+- **Gaussian Splatting**: An innovative approach to create 3D models with exceptional realism and precision.
+
+Whether you're interested in 3D modeling, computer vision, or state-of-the-art machine learning techniques, Object Onboarding offers valuable insights and tools for high-quality 3D reconstruction.
 
 ---
 
@@ -15,5 +24,3 @@ We would like to acknowledge the contributions of the following projects, which 
 We are grateful for the hard work and open-source efforts of these teams.
 
 ---
-
-
