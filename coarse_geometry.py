@@ -57,16 +57,23 @@ def apply_mask2mask(mask1, mask2):
     ]
     return masked_mask
 
-def save_masked_images(images_folder, masks_folder, output_folder):
+def save_masked_images(images_folder, masks_folder, output_folder, flip=False):
     os.makedirs(output_folder, exist_ok=True)
     images_path = sorted(os.listdir(images_folder))
     masks_path = sorted(os.listdir(masks_folder))
     for i, (img_path, mask_path) in enumerate(zip(images_path, masks_path)):
-        img = np.array(Image.open(os.path.join(images_folder, img_path)))
-        mask = np.array(Image.open(os.path.join(masks_folder, mask_path)))
+        # Open image with PIL and convert to RGB for consistency
+        img = np.array(Image.open(os.path.join(images_folder, img_path)).convert('RGB'))
+        # Open mask with PIL and ensure it's single-channel (grayscale)
+        mask = np.array(Image.open(os.path.join(masks_folder, mask_path)).convert('L'))
         masked_img = cv2.bitwise_and(img, img, mask=mask)
+        # Flip the image 180 degrees if the flag is set
+        if flip:
+            masked_img = cv2.rotate(masked_img, cv2.ROTATE_180)
+        # Convert from RGB to BGR because OpenCV saves in BGR format
+        masked_img_bgr = cv2.cvtColor(masked_img, cv2.COLOR_RGB2BGR)
         output_path = os.path.join(output_folder, f"masked_image_{i:03d}.png")
-        cv2.imwrite(output_path, masked_img)
+        cv2.imwrite(output_path, masked_img_bgr)
 
 def clean_with_dbscan(points, colors, eps=0.02, min_samples=100):
     db = DBSCAN(eps=eps, min_samples=min_samples).fit(points)
