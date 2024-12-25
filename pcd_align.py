@@ -188,21 +188,27 @@ def main():
     combined_xyz, combined_rgb, combined_normals = concatenate_point_clouds(source, target)
 
     # Save combined point cloud
-    os.makedirs(args.output_path, exist_ok=True)
-    aligned_pointcloud_path = Path(args.output_path) / "points3D.ply"
-    save_combined_point_cloud(combined_xyz, combined_rgb, combined_normals, aligned_pointcloud_path)
+    colmap_path = os.path.join(args.output_path, "sparse", "0")
+    os.makedirs(colmap_path, exist_ok=True)
+    save_combined_point_cloud(combined_xyz, combined_rgb, combined_normals, Path(colmap_path) / "points3D.ply")
 
     # Merge masked images
     merge_masked_images(Path(args.masked_source_path), Path(args.masked_target_path), Path(args.output_path) / "images")
 
-    # Merge intrinsic and extrinsic parameters
+    # Merge intrinsic and extrinsic parameters, first combined the flip + ICP transformation alignment 
+    R = np.array([[1,  0,  0, 0],
+                  [0, -1,  0, 0],
+                  [0,  0, -1, 0], 
+                  [0, 0, 0, 1]])
+    #print(transformation)
+    transformation = transformation @ R
     merge_intrinsics_and_extrinsics(
         Path(args.target_camera_path),
         Path(args.source_camera_path),
         Path(args.target_image_path),
         Path(args.source_image_path),
-        Path(args.output_path) / "cameras.txt",
-        Path(args.output_path) / "images.txt",
+        Path(colmap_path) / "cameras.txt",
+        Path(colmap_path) / "images.txt",
         transformation
     )
 
