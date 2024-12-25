@@ -30,6 +30,7 @@ def get_args_parser():
     parser.add_argument("--n_views", type=int, default=12, help="Number of views to process")
     parser.add_argument("--img_base_path", type=str, required=True, help="Base path to images")
     parser.add_argument("--use_masks", action='store_true', help="Use masks during processing")
+    parser.add_argument("--face", default="", type=str, help="object direction: facing 'up' or facing 'down'")
     return parser
 
 def load_and_preprocess_images(img_folder_path, size):
@@ -129,7 +130,7 @@ def main():
             raise FileNotFoundError(f"Mask folder not found: {mask_folder_path}")
         target_size = imgs[0].shape[:2][::-1]  # (W, H)
         masks = load_and_resize_masks(mask_folder_path, target_size)
-        save_masked_images(img_folder_path, mask_folder_path, masked_images_folder)  # Save masked images
+        save_masked_images(img_folder_path, mask_folder_path, masked_images_folder, flip=args.face == "down")  # Save masked images
         pts3d = apply_masks(pts3d, masks)
         imgs = apply_masks(imgs, masks)
         confidence_masks = apply_mask2mask(confidence_masks, masks)
