@@ -24,3 +24,17 @@ def rotmat2qvec(R):
     if qvec[0] < 0:
         qvec *= -1
     return qvec
+
+def read_pose_matrices(file_path):
+    poses = []
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+        for line in lines:
+            parts = line.strip().split()
+            if len(parts) > 0:
+                index = int(parts[0])
+                R = np.transpose(qvec2rotmat(np.array(parts[1:5], dtype=float)))
+                T = np.array(parts[5:8], dtype=float)
+                pose = np.vstack([np.hstack([R, T.reshape(3, -1)]), np.array([0, 0, 0, 1])])
+                poses.append({'index': index, 'pose': pose})
+    return poses
