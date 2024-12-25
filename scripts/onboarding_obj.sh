@@ -45,7 +45,8 @@ for DATASET in "${DATASETS[@]}"; do
                     --focal_avg \
                     --n_views ${N_VIEW} \
                     --img_base_path ${KF_OUTPUT_PATH} \
-                    --use_masks"
+                    --use_masks
+                    --face ${FACE}"
 
                     echo "========= ${DATASET}: Point cloud estimation (${FACE}) ========="
                     $CMD_PC
