@@ -52,20 +52,6 @@ def align_point_clouds(source_path, target_path, threshold):
 
     return source, target, result_icp.transformation
 
-def read_pose_matrices(file_path):
-    poses = []
-    with open(file_path, 'r') as file:
-        lines = file.readlines()
-        for line in lines:
-            parts = line.strip().split()
-            if len(parts) > 0:
-                index = int(parts[0])
-                R = np.transpose(qvec2rotmat(np.array(parts[1:5], dtype=float)))
-                T = np.array(parts[5:8], dtype=float)
-                pose = np.vstack([np.hstack([R, T.reshape(3, -1)]), np.array([0, 0, 0, 1])])
-                poses.append({'index': index, 'pose': pose})
-    return poses
-
 def merge_masked_images(source_path, target_path, output_path):
     os.makedirs(output_path, exist_ok=True)
 
@@ -131,7 +117,7 @@ def merge_intrinsics_and_extrinsics(target_camera_path, source_camera_path,
                 tvec = np.array(parts[5:8], dtype=float)
                 R = qvec2rotmat(qvec)  # Convert quaternion to rotation matrix
                 pose = np.vstack([np.hstack([R, tvec.reshape(3, -1)]), np.array([0, 0, 0, 1])])
-
+                pose = np.linalg.inv(pose)
                 # Apply transformation
                 updated_pose = source_transform @ pose
                 updated_pose = np.linalg.inv(updated_pose)
@@ -147,8 +133,8 @@ def concatenate_point_clouds(source, target):
     source_xyz = np.asarray(source.points)
     target_xyz = np.asarray(target.points)
 
-    source_rgb = np.asarray(source.colors) 
-    target_rgb = np.asarray(target.colors) 
+    source_rgb = np.asarray(source.colors) * 255  # Convert to 0-255 scale
+    target_rgb = np.asarray(target.colors) * 255
 
     source_normals = np.asarray(source.normals) if source.has_normals() else np.zeros_like(source_xyz)
     target_normals = np.asarray(target.normals) if target.has_normals() else np.zeros_like(target_xyz)
