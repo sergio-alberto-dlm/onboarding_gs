@@ -37,7 +37,7 @@ for DATASET in "${DATASETS[@]}"; do
             --target_image_path=${DATA_BASE_PATH}/up/${N_VIEW}_views/sparse/0/images.txt \
             --source_image_path=${DATA_BASE_PATH}/down/${N_VIEW}_views/sparse/0/images.txt"
 
-            echo "========= ${DATASET}: Key-frame selection ========="
+            echo "========= ${DATASET}: point cloud aligning ========="
             eval $CMD_PCD_A
         done
     done
