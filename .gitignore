@@ -4,5 +4,5 @@ data/
 submodules/dust3r/checkpoints/
 models/__pycache__/
 models/curope/__pycache__/
-gaussian_splatting/results/
 notebooks/test.ipynb
+gaussian_splatting/results/
