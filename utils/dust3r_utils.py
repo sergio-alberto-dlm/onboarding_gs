@@ -227,7 +227,7 @@ def save_colmap_images(poses, images_file, train_img_list):
             t = pose[:3, 3]
             q = R_to_quaternion(R)  # Convert rotation matrix to quaternion
             f.write(f"{i} {q[0]} {q[1]} {q[2]} {q[3]} {t[0]} {t[1]} {t[2]} {i} {train_img_list[i-1]}\n")
-            f.write(f"\n")
+            #f.write(f"\n")
 
 
 def round_python3(number):
