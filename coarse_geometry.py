@@ -70,10 +70,12 @@ def save_masked_images(images_folder, masks_folder, output_folder, flip=False):
         masked_img = cv2.bitwise_and(img, img, mask=mask)
         # Flip the image 180 degrees if the flag is set
         if flip:
-            masked_img = cv2.rotate(masked_img, cv2.ROTATE_180)
+            #masked_img = cv2.rotate(masked_img, cv2.ROTATE_180)
+            #masked_img = cv2.flip(masked_img, 1)
+            pass
         # Convert from RGB to BGR because OpenCV saves in BGR format
         masked_img_bgr = cv2.cvtColor(masked_img, cv2.COLOR_RGB2BGR)
-        output_path = os.path.join(output_folder, f"masked_image_{i:03d}.png")
+        output_path = os.path.join(output_folder, f"masked_image_{i:03d}.jpg")
         cv2.imwrite(output_path, masked_img_bgr)
 
 def clean_with_dbscan(points, colors, eps=0.02, min_samples=100):
