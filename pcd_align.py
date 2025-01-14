@@ -26,16 +26,18 @@ def align_point_clouds(source_path, target_path, threshold):
     source = o3d.io.read_point_cloud(source_path)
     target = o3d.io.read_point_cloud(target_path)
 
-    # Define rotation matrix (180 degrees around X-axis)
+    # flip 180 degrees 
     R = np.array([[1,  0,  0],
                   [0, -1,  0],
                   [0,  0, -1]])
-
-    # Rotate source point cloud
-    centroid = source.get_center()
-    source.translate(-centroid)
+    centroid_src = source.get_center()
+    source.translate(-centroid_src)
     source.rotate(R, center=(0, 0, 0))
-    source.translate(centroid)
+    source.translate(centroid_src)
+    # align centroids 
+    centroid_trg = target.get_center()
+    diff_centers = centroid_trg - centroid_src
+    source.translate(diff_centers)
 
     # Perform ICP registration
     initial_transform = np.eye(4)
@@ -50,7 +52,7 @@ def align_point_clouds(source_path, target_path, threshold):
     # Transform source point cloud
     source.transform(result_icp.transformation)
 
-    return source, target, result_icp.transformation, centroid
+    return source, target, result_icp.transformation, centroid_src, centroid_trg
 
 def merge_masked_images(source_path, target_path, output_path):
     os.makedirs(output_path, exist_ok=True)
@@ -153,7 +155,7 @@ def main():
     args = parser.parse_args()
 
     # Align point clouds
-    source, target, transformation, centroid_source = align_point_clouds(
+    source, target, transformation, centroid_source, centroid_target = align_point_clouds(
         args.source_path,
         args.target_path,
         args.threshold
@@ -179,9 +181,13 @@ def main():
     centroid_translate[:3, 3] = centroid_source
     inv_centroid_translate = np.eye(4)
     inv_centroid_translate[:3, 3] = -centroid_source
+
+    centroid_align = np.eye(4)
+    diff_centers = centroid_target - centroid_source
+    centroid_align[:3, 3] = diff_centers
     
     #print(transformation)
-    transformation = transformation @ (centroid_translate @ R @ inv_centroid_translate)
+    transformation = transformation @ (centroid_align) @ (centroid_translate @ R @ inv_centroid_translate)
     merge_intrinsics_and_extrinsics(
         Path(args.target_camera_path),
         Path(args.source_camera_path),
