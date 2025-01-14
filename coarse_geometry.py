@@ -5,6 +5,7 @@ import argparse
 import time
 from PIL import Image
 import cv2
+import open3d as o3d 
 from sklearn.cluster import DBSCAN
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -94,6 +95,20 @@ def clean_with_dbscan(points, colors, eps=0.02, min_samples=100):
 
     return np.vstack(filtered_points), np.vstack(filtered_colors)
 
+def downsample_pcd(points : np.array, colors : np.array, downsample_factor = 3):
+    # Create a point cloud
+    point_cloud = o3d.geometry.PointCloud()
+    point_cloud.points = o3d.utility.Vector3dVector(points)
+    point_cloud.colors = o3d.utility.Vector3dVector(colors)
+
+    point_cloud = point_cloud.random_down_sample(1.0 / downsample_factor)
+
+    # Return the downsampled point cloud as numpy arrays
+    xyz = np.asarray(point_cloud.points)
+    rgb = np.asarray(point_cloud.colors)
+
+    return xyz, rgb
+
 def main():
     parser = get_args_parser()
     args = parser.parse_args()
@@ -149,6 +164,8 @@ def main():
     pts_4_3dgs = np.concatenate(pts3d)
     color_4_3dgs = np.concatenate(imgs)
     color_4_3dgs = (color_4_3dgs * 255.0).astype(np.uint8)
+
+    pts_4_3dgs, color_4_3dgs = downsample_pcd(pts_4_3dgs, color_4_3dgs)
 
     print("Cleaning with DBSCAN...")
     filtered_points, filtered_colors = clean_with_dbscan(pts_4_3dgs, color_4_3dgs, eps=0.02, min_samples=100)
