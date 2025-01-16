@@ -21,6 +21,51 @@ def get_args_parser():
     parser.add_argument("--source_image_path", type=str, required=True, help="Path to images.txt for face down")
     return parser
 
+def multi_scale_color_icp(source, target):
+    voxel_radius = [1.5, 1, 0.8]
+    max_iter = [800, 400, 200]
+    current_transformation = np.identity(4)
+    print("Colored point cloud registration")
+    print("source have colors: ", len(source.colors) > 0)
+    print("target have colors: ", len(target.colors) > 0)
+    for scale in range(3):
+        iter = max_iter[scale]
+        radius = voxel_radius[scale]
+        print([iter, radius, scale])
+
+        print("Downsample with a voxel size %.2f" % radius)
+        source_down = source.voxel_down_sample(radius)
+        target_down = target.voxel_down_sample(radius)
+
+        print("Estimate normal.")
+        source_down.estimate_normals(
+            o3d.geometry.KDTreeSearchParamHybrid(radius=radius * 2, max_nn=30))
+        target_down.estimate_normals(
+            o3d.geometry.KDTreeSearchParamHybrid(radius=radius * 2, max_nn=30))
+
+        print("Applying colored point cloud registration")
+        result_icp = o3d.pipelines.registration.registration_colored_icp(
+            source_down, target_down, radius, current_transformation,
+            o3d.pipelines.registration.TransformationEstimationForColoredICP(),
+            o3d.pipelines.registration.ICPConvergenceCriteria(relative_fitness=1e-6,
+                                                            relative_rmse=1e-6,
+                                                            max_iteration=iter))
+        current_transformation = result_icp.transformation
+
+    return  result_icp
+
+def simple_icp(source, target, threshold):
+    # Perform ICP registration
+    initial_transform = np.eye(4)
+    result_icp = o3d.pipelines.registration.registration_icp(
+        source,
+        target,
+        threshold,
+        initial_transform,
+        o3d.pipelines.registration.TransformationEstimationPointToPoint()
+    )
+    return result_icp
+
 def align_point_clouds(source_path, target_path, threshold):
     # Load source and target point clouds
     source = o3d.io.read_point_cloud(source_path)
@@ -39,15 +84,7 @@ def align_point_clouds(source_path, target_path, threshold):
     diff_centers = centroid_trg - centroid_src
     source.translate(diff_centers)
 
-    # Perform ICP registration
-    initial_transform = np.eye(4)
-    result_icp = o3d.pipelines.registration.registration_icp(
-        source,
-        target,
-        threshold,
-        initial_transform,
-        o3d.pipelines.registration.TransformationEstimationPointToPoint()
-    )
+    result_icp = multi_scale_color_icp(source, target)
 
     # Transform source point cloud
     source.transform(result_icp.transformation)
